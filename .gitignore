@@ -44,3 +44,8 @@ checklist.md
 context-notes.md
 text.md
 newtext.md
+
+# 프로젝트 전용 스킬과 이전 완성품 보관본
+skills/
+archives/
+*.zip
