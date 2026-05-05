@@ -1,0 +1,39 @@
+<!-- 중심 문장 찾기 학습 웹앱의 진입 문서 -->
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="문단별 중심 문장을 찾으며 문장 관계를 익히는 학습용 웹앱입니다."
+    />
+    <title>유전자 조작의 확대 | 중심 문장 찾기</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell" aria-live="polite">
+      <header class="lesson-hero">
+        <p class="eyebrow">중심 문장 찾기 훈련</p>
+        <h1>
+          <span class="title-badge-wrap">
+            <span id="lesson-title" class="lesson-title-text"></span>
+            <span class="brand-by">by HooniKim</span>
+          </span>
+        </h1>
+        <p id="lesson-subtitle" class="lesson-subtitle"></p>
+      </header>
+
+      <section class="progress-band" aria-label="문단 진행 상황">
+        <div id="progress-label" class="progress-label"></div>
+        <div id="progress-dots" class="progress-dots"></div>
+      </section>
+
+      <section id="lesson-stage" class="lesson-stage"></section>
+
+      <section id="summary-stage" class="summary-stage" hidden></section>
+    </main>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
