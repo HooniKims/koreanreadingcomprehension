@@ -2,11 +2,13 @@
 import { lesson } from "./data.js";
 import {
   createInitialState,
+  hideModelSummary,
   moveNext,
   restartLesson,
   selectReviewAnswer,
   selectSentence,
   startReviewQuestion,
+  updateStudentSummary,
 } from "./state.js";
 import {
   renderParagraph,
@@ -16,12 +18,23 @@ import {
 } from "./render.js";
 
 const state = createInitialState();
+const startPageEl = document.querySelector("#start-page");
+const mainAppEl = document.querySelector("#main-app");
+const startButtonEl = document.querySelector("#start-lesson");
 
 function paint(options = {}) {
   renderProgress(lesson, state);
 
   if (state.isComplete) {
     renderSummary(lesson, state, {
+      onCheck: (summaryText) => {
+        updateStudentSummary(state, summaryText);
+        paint({ animate: false });
+      },
+      onCloseModelSummary: () => {
+        hideModelSummary(state);
+        paint({ animate: false });
+      },
       onRestart: () => {
         restartLesson(state);
         paint();
@@ -54,4 +67,9 @@ function paint(options = {}) {
 }
 
 renderStaticHeader(lesson);
-paint();
+startButtonEl.addEventListener("click", () => {
+  startPageEl.hidden = true;
+  mainAppEl.hidden = false;
+  paint();
+  window.scrollTo({ top: 0, behavior: "auto" });
+});

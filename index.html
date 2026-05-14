@@ -9,10 +9,24 @@
       content="문단별 중심 문장을 찾으며 문장 관계를 익히는 학습용 웹앱입니다."
     />
     <title>유전자 조작의 확대 | 중심 문장 찾기</title>
+    <link rel="icon" href="./assets/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="./assets/favicon-32x32.png" />
+    <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <main class="app-shell" aria-live="polite">
+    <section id="start-page" class="login-page" aria-labelledby="start-title">
+      <div class="login-bg" aria-hidden="true"></div>
+      <div class="login-overlay" aria-hidden="true"></div>
+      <div class="login-content start-content">
+        <p class="login-eyebrow">비판적 독해 연습</p>
+        <h1 id="start-title">유전자 조작의 확대</h1>
+        <p class="start-copy">문단별 중심 문장을 찾고 확인 문제를 푼 뒤, 전체 글을 직접 요약해 보세요.</p>
+        <button id="start-lesson" class="login-submit start-submit" type="button">시작하기</button>
+      </div>
+    </section>
+
+    <main id="main-app" class="app-shell" aria-live="polite" hidden>
       <header class="lesson-hero">
         <p class="eyebrow">중심 문장 찾기 훈련</p>
         <h1>

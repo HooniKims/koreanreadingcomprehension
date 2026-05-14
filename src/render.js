@@ -206,38 +206,122 @@ function createReviewQuestion(paragraph, answerIndex) {
 export function renderSummary(lesson, state, handlers) {
   stageEl.replaceChildren();
   summaryEl.hidden = false;
-  const pieces = buildSummaryPieces(state.collectedCenters);
+  if (!state.shuffledSummaryCenters) {
+    state.shuffledSummaryCenters = shuffleSummaryCenters(state.collectedCenters);
+  }
+  const pieces = buildSummaryPieces(state.shuffledSummaryCenters);
+  const modelPieces = buildSummaryPieces(state.collectedCenters);
   const summaryText = createSummaryText(state.collectedCenters);
 
   summaryEl.innerHTML = `
     <div class="summary-panel">
       <p class="eyebrow">전체 글 요약</p>
-      <h2>중심 문장들이 하나의 요약으로 모였습니다.</h2>
+      <h2>중심 문장들을 바탕으로 전체 글을 직접 요약하세요.</h2>
       <div class="collected-sentences">
         ${pieces
           .map(
             (piece, index) => `
               <div class="center-chip" style="--delay:${index * 100}ms">
-                <span>${piece.label}</span>
-                <p>${piece.text}</p>
+                <div class="center-chip-header">
+                  <p>${piece.text}</p>
+                  <button class="copy-center-sentence" type="button" data-copy-text="${escapeHtml(piece.text)}">복사하기</button>
+                </div>
               </div>
             `,
           )
           .join("")}
       </div>
-      <p class="summary-copy">
-        ${pieces
-          .map(
-            (piece) =>
-              `<span class="rainbow-connector">${piece.connector}</span>, ${piece.text}`,
-          )
-          .join(" ")}
-      </p>
-      <button class="secondary-action" type="button">처음부터 다시 학습하기</button>
+      <form class="student-summary-form">
+        <label for="student-summary">나의 요약</label>
+        <textarea
+          id="student-summary"
+          name="studentSummary"
+          rows="6"
+          placeholder="중심 문장들을 이어보고, 문장들을 자연스럽게 연결할 수 있는 말을 포함해서 글의 핵심 내용을 정리해보세요."
+        >${escapeHtml(state.studentSummary)}</textarea>
+        <div class="summary-actions">
+          <button class="summary-submit" type="submit">확인</button>
+          <button class="secondary-action restart-summary" type="button">처음부터 다시 학습하기</button>
+        </div>
+        <p class="summary-submit-help">확인 버튼을 누르면 모범 답안을 볼 수 있습니다.</p>
+      </form>
+      ${
+        state.isModelSummaryVisible
+          ? `
+            <div class="model-summary-backdrop" role="presentation">
+              <section class="model-summary-modal" role="dialog" aria-modal="true" aria-labelledby="model-summary-title">
+                <p class="model-summary-kicker">문단 요약 모범 답안</p>
+                <h3 id="model-summary-title">이런 식으로 문장을 이어 쓸 수 있습니다.</h3>
+                <p>${renderModelSummary(modelPieces)}</p>
+                <button class="model-summary-close" type="button">확인</button>
+              </section>
+            </div>
+          `
+          : ""
+      }
     </div>
   `;
 
-  summaryEl.querySelector(".secondary-action").addEventListener("click", handlers.onRestart);
+  summaryEl.querySelector(".student-summary-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    handlers.onCheck(summaryEl.querySelector("#student-summary").value);
+  });
+  summaryEl.querySelector(".restart-summary").addEventListener("click", handlers.onRestart);
+  summaryEl.querySelectorAll(".copy-center-sentence").forEach((button) => {
+    button.addEventListener("click", () => copyCenterSentence(button));
+  });
+  summaryEl.querySelector(".model-summary-close")?.addEventListener("click", handlers.onCloseModelSummary);
   summaryEl.dataset.summary = summaryText;
   renderProgress(lesson, state);
+}
+
+function renderModelSummary(pieces) {
+  return pieces
+    .map(
+      (piece) =>
+        `<span class="rainbow-connector">${escapeHtml(piece.connector)}</span>, ${escapeHtml(piece.text)}`,
+    )
+    .join(" ");
+}
+
+function shuffleSummaryCenters(collectedCenters) {
+  const shuffled = [...collectedCenters];
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+  }
+
+  if (isOriginalOrder(collectedCenters, shuffled) && shuffled.length > 1) {
+    [shuffled[0], shuffled[1]] = [shuffled[1], shuffled[0]];
+  }
+
+  return shuffled;
+}
+
+function isOriginalOrder(original, shuffled) {
+  return original.every((item, index) => item.paragraphId === shuffled[index]?.paragraphId);
+}
+
+async function copyCenterSentence(button) {
+  const text = button.dataset.copyText;
+
+  try {
+    await navigator.clipboard.writeText(text);
+    button.textContent = "복사됨";
+  } catch {
+    button.textContent = "복사 실패";
+  }
+
+  window.setTimeout(() => {
+    button.textContent = "복사하기";
+  }, 1200);
+}
+
+function escapeHtml(value) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
 }

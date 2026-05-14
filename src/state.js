@@ -10,6 +10,9 @@ export function createInitialState() {
     reviewFeedback: null,
     solvedParagraphs: new Set(),
     collectedCenters: [],
+    shuffledSummaryCenters: null,
+    studentSummary: "",
+    isModelSummaryVisible: false,
     isComplete: false,
   };
 }
@@ -90,6 +93,7 @@ export function moveNext(state, lesson) {
 
   if (state.currentIndex >= lesson.paragraphs.length - 1) {
     state.isComplete = true;
+    state.shuffledSummaryCenters = null;
     return true;
   }
 
@@ -113,5 +117,18 @@ export function restartLesson(state) {
   state.reviewFeedback = null;
   state.solvedParagraphs.clear();
   state.collectedCenters = [];
+  state.shuffledSummaryCenters = null;
+  state.studentSummary = "";
+  state.isModelSummaryVisible = false;
   state.isComplete = false;
+}
+
+export function updateStudentSummary(state, summaryText) {
+  state.studentSummary = summaryText.trim();
+  state.isModelSummaryVisible = true;
+  return state.studentSummary;
+}
+
+export function hideModelSummary(state) {
+  state.isModelSummaryVisible = false;
 }
