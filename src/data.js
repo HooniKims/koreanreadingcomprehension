@@ -2,12 +2,17 @@
 export const lesson = {
   title: "유전자 조작의 확대",
   subtitle: "우리가 경계해야 하는 것은 무엇일까요?",
+  modelOverallSummary:
+    "유전자 조작은 유전 공학을 활용하는 기술로 생활을 편리하게 만들 수 있지만, 생태계 혼란, 생명 윤리, 안전성 문제를 일으킬 수 있으므로 신중하게 확대해야 한다.",
   paragraphs: [
     {
       id: "p1",
       sectionTitle: "도입: 유전 공학의 개념과 활용",
       label: "1문단",
       centerIndex: 3,
+      centerReason:
+        "이 문장은 유전 공학과 유전자 조작의 관계를 알려 주며, 문단 전체가 설명하는 대상을 가장 넓게 담고 있습니다.",
+      modelSummary: "유전자 조작은 유전 공학을 활용하는 방법 중 하나이다.",
       sentences: [
         {
           text: "요즘 다양한 곳에서 ‘유전 공학’이라는 말을 들을 수 있습니다.",
@@ -46,6 +51,9 @@ export const lesson = {
       sectionTitle: "배경: 유전자 조작 확대의 편리함",
       label: "2문단",
       centerIndex: 0,
+      centerReason:
+        "이 문장은 유전자 조작이 생활을 편리하게 만든다는 문단의 핵심 생각을 먼저 말하고, 뒤 문장들은 그 예를 듭니다.",
+      modelSummary: "유전자 조작은 농업과 의료 등 여러 분야에서 생활을 편리하게 해 준다.",
       sentences: [
         {
           text: "유전자 조작은 우리의 생활을 더욱 편리하게 만들어 주고 있습니다.",
@@ -78,6 +86,9 @@ export const lesson = {
       sectionTitle: "문제 제기: 섣부른 확대에 대한 우려",
       label: "3문단",
       centerIndex: 2,
+      centerReason:
+        "이 문장은 뒤에서 살펴볼 문제를 질문하며 글의 방향을 유전자 조작 확대의 반대 이유로 이끕니다.",
+      modelSummary: "유전자 조작의 섣부른 확대를 반대하는 까닭을 생각해 보아야 한다.",
       sentences: [
         {
           text: "하지만 유전자 조작을 이용하면 편리한 점만 있을까요?",
@@ -104,6 +115,9 @@ export const lesson = {
       sectionTitle: "근거 1: 생태계 혼란 가능성",
       label: "4문단",
       centerIndex: 0,
+      centerReason:
+        "이 문장은 유전자 조작 확대의 첫 번째 문제인 생태계 혼란을 직접 말하고, 뒤 문장들은 그 까닭과 결과를 설명합니다.",
+      modelSummary: "유전자 조작이 확대되면 생태계에 예상하지 못한 혼란이 생길 수 있다.",
       sentences: [
         {
           text: "먼저 유전자 조작이 확대되면 생태계에 혼란이 생길 수 있습니다.",
@@ -130,6 +144,9 @@ export const lesson = {
       sectionTitle: "근거 2: 생명 윤리 문제",
       label: "5문단",
       centerIndex: 0,
+      centerReason:
+        "이 문장은 생명의 가치를 가볍게 여기게 될 수 있다는 문단의 핵심 문제를 가장 넓게 제시합니다.",
+      modelSummary: "유전자 조작은 생명의 가치를 가볍게 여기게 만드는 윤리 문제를 낳을 수 있다.",
       sentences: [
         {
           text: "유전자 조작이 생명의 가치를 가볍게 여기게 만들 수 있다는 점도 문제입니다.",
@@ -162,6 +179,9 @@ export const lesson = {
       sectionTitle: "근거 3: 안전성 예측의 어려움",
       label: "6문단",
       centerIndex: 0,
+      centerReason:
+        "이 문장은 유전자 조작 결과의 안전성을 미리 확신하기 어렵다는 핵심 문제를 말하고, 뒤 문장들이 그 이유를 풉니다.",
+      modelSummary: "유전자 조작의 결과가 시간이 지난 뒤에도 안전할지 미리 확신하기 어렵다.",
       sentences: [
         {
           text: "유전자 조작의 결과가 언제나 안전하다고 미리 확신하기 어렵다는 점도 해결 되지 않은 숙제입니다.",
@@ -188,6 +208,9 @@ export const lesson = {
       sectionTitle: "결론: 신중한 확대의 필요성",
       label: "7문단",
       centerIndex: 3,
+      centerReason:
+        "이 문장은 앞에서 제시한 장점과 문제를 종합하여 유전자 조작을 신중하게 확대해야 한다는 결론을 말합니다.",
+      modelSummary: "유전자 조작은 편리하지만 문제 해결 방법을 함께 고민하며 신중하게 확대해야 한다.",
       sentences: [
         {
           text: "유전자 조작은 분명 다양한 면에서 우리의 삶을 더 편리하게 만들 것입니다.",

@@ -8,6 +8,7 @@
       name="description"
       content="문단별 중심 문장을 찾으며 문장 관계를 익히는 학습용 웹앱입니다."
     />
+    <base href="/" />
     <title>유전자 조작의 확대 | 중심 문장 찾기</title>
     <link rel="icon" href="./assets/favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" sizes="32x32" href="./assets/favicon-32x32.png" />
@@ -19,10 +20,20 @@
       <div class="login-bg" aria-hidden="true"></div>
       <div class="login-overlay" aria-hidden="true"></div>
       <div class="login-content start-content">
-        <p class="login-eyebrow">비판적 독해 연습</p>
-        <h1 id="start-title">유전자 조작의 확대</h1>
-        <p class="start-copy">문단별 중심 문장을 찾고 확인 문제를 푼 뒤, 전체 글을 직접 요약해 보세요.</p>
-        <button id="start-lesson" class="login-submit start-submit" type="button">시작하기</button>
+        <p class="login-eyebrow">중학교 국어 읽기 활동</p>
+        <h1 id="start-title">중심문장 찾기와 요약</h1>
+        <p class="start-copy">시연 수업 코드 KOR-01과 임시 닉네임으로 들어가 문단별 중심문장, 이유, 요약을 차례로 작성합니다.</p>
+        <form id="entry-form" class="entry-form" action="." method="get" target="_self">
+          <label>
+            <span>수업 코드</span>
+            <input id="class-code" name="classCode" autocomplete="off" value="KOR-01" readonly required />
+          </label>
+          <label>
+            <span>임시 닉네임</span>
+            <input id="nickname" name="nickname" autocomplete="off" placeholder="예: 7번 독서가" required />
+          </label>
+          <button id="start-lesson" class="login-submit start-submit" type="button">입장하기</button>
+        </form>
       </div>
     </section>
 

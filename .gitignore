@@ -35,6 +35,7 @@ yarn-error.log*
 
 # Netlify 로컬 상태
 .netlify/
+deno.lock
 
 # 작업용 참고 문서와 초안 원문
 AGENTS.md

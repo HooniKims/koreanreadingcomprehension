@@ -1,3 +1,21 @@
-# Netlify 정적 배포 설정
+# Netlify 정적 사이트 + 서버리스 AI 코칭 함수 배포 설정
 [build]
-publish = "."
+command = "npm run build"
+publish = "dist"
+functions = "netlify/functions"
+
+[build.environment]
+NODE_VERSION = "20"
+
+[functions]
+node_bundler = "esbuild"
+
+[[redirects]]
+from = "/lastpage"
+to = "/index.html"
+status = 200
+
+[[redirects]]
+from = "/lastpage/"
+to = "/index.html"
+status = 200
