@@ -25,6 +25,20 @@ test("entry screen uses the fixed presentation class code", () => {
   assert.match(appSource, /classCode: PRESENTATION_CLASS_CODE/);
 });
 
+test("entry fields advance and submit with Enter", () => {
+  const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
+  const appSource = readFileSync(new URL("../src/app.js", import.meta.url), "utf8");
+
+  assert.match(html, /id="class-code"[^>]*autofocus/);
+  assert.match(appSource, /const classCodeInputEl = document\.querySelector\("#class-code"\)/);
+  assert.match(appSource, /const nicknameInputEl = document\.querySelector\("#nickname"\)/);
+  assert.match(appSource, /classCodeInputEl\.addEventListener\("keydown"/);
+  assert.match(appSource, /nicknameInputEl\.addEventListener\("keydown"/);
+  assert.match(appSource, /event\.key !== "Enter"/);
+  assert.match(appSource, /nicknameInputEl\.focus\(\)/);
+  assert.match(appSource, /handleEntry\(\)/);
+});
+
 test("lastpage path is wired as a Netlify demo shortcut to the final task", () => {
   const appSource = readFileSync(new URL("../src/app.js", import.meta.url), "utf8");
   const netlifyConfig = readFileSync(new URL("../netlify.toml", import.meta.url), "utf8");

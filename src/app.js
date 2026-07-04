@@ -47,6 +47,8 @@ let paragraphCoachRequestVersion = 0;
 const startPageEl = document.querySelector("#start-page");
 const mainAppEl = document.querySelector("#main-app");
 const entryFormEl = document.querySelector("#entry-form");
+const classCodeInputEl = document.querySelector("#class-code");
+const nicknameInputEl = document.querySelector("#nickname");
 const startButtonEl = document.querySelector("#start-lesson");
 
 function paint(options = {}) {
@@ -306,10 +308,28 @@ function handleEntry() {
   paint({ scrollTop: true });
 }
 
+function handleEntryFieldKeydown(event) {
+  if (event.key !== "Enter") {
+    return;
+  }
+
+  event.preventDefault();
+
+  if (event.currentTarget === classCodeInputEl) {
+    nicknameInputEl.focus();
+    nicknameInputEl.select();
+    return;
+  }
+
+  handleEntry();
+}
+
 entryFormEl.addEventListener("submit", (event) => {
   event.preventDefault();
   handleEntry();
 });
+classCodeInputEl.addEventListener("keydown", handleEntryFieldKeydown);
+nicknameInputEl.addEventListener("keydown", handleEntryFieldKeydown);
 startButtonEl.addEventListener("click", handleEntry);
 
 window.addEventListener("online", () => {

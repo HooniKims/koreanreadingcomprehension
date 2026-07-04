@@ -76,6 +76,7 @@ test("AI coach image button opens a popup chat", () => {
   assert.match(renderSource, /renderAiCoachChat/);
   assert.match(renderSource, /class="ai-chat-modal"/);
   assert.match(renderSource, /도와드릴게요/);
+  assert.match(renderSource, /아주 쉬운 말/);
   assert.doesNotMatch(renderSource, /도와줄게요/);
   assert.match(renderSource, /handlers\.onOpenAiChat/);
   assert.match(renderSource, /handlers\.onAiChatSubmit/);

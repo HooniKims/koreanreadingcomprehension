@@ -43,16 +43,18 @@ test("coach function calls OpenAI Responses API with GPT-5.4 nano from env", asy
     assert.match(requestBody.input, /학생 질문: 중심문장을 쉽게 찾는 방법이 뭐야\?/);
     assert.match(requestBody.input, /요청 목적: 중심문장이라고 생각한 이유 쓰기 힌트/);
     assert.match(requestBody.input, /현재 보이는 문장만 참고/);
-    assert.match(requestBody.instructions, /중학교 1학년/);
-    assert.match(requestBody.instructions, /중하 수준/);
+    assert.match(requestBody.instructions, /초등학생도 이해할 수/);
+    assert.doesNotMatch(requestBody.instructions, /중하 수준/);
     assert.match(requestBody.instructions, /쉬운 낱말/);
     assert.match(requestBody.instructions, /짧은 문장/);
+    assert.match(requestBody.instructions, /어려운 말은 쉬운 말로/);
     assert.match(requestBody.instructions, /현재 보이는 문장/);
     assert.match(requestBody.instructions, /문단 밖/);
     assert.match(requestBody.instructions, /친절한 존댓말/);
     assert.match(requestBody.instructions, /반말을 쓰지 않는다/);
     assert.match(requestBody.instructions, /중심문장이라고 생각한 이유/);
     assert.match(requestBody.instructions, /문장을 중간에서 끊지 않는다/);
+    assert.match(requestBody.input, /초등학생도 이해할 수 있게/);
   } finally {
     globalThis.fetch = originalFetch;
     process.env.OPENAI_API_KEY = originalApiKey;

@@ -87,7 +87,7 @@ export function renderParagraph(lesson, state, handlers) {
           <section class="ai-coach-box" aria-label="AI 코치 도움">
             <div>
               <p class="ai-coach-title">AI 코치</p>
-              <p>정답을 바로 알려주지 않고, 다시 생각할 질문으로 도와줍니다.</p>
+              <p>아주 쉬운 말로 다시 생각할 질문을 드립니다.</p>
             </div>
             <button class="ai-coach-action" type="button" aria-label="AI 코치에게 힌트 받기">
               <img class="ai-coach-avatar" src="./assets/ai-coach-button.png" alt="" aria-hidden="true" />
@@ -270,7 +270,7 @@ function renderAiCoachChat(state) {
         ${
           messages.length > 0
             ? messages.map(renderAiChatMessage).join("")
-            : `<article class="ai-chat-message is-assistant"><p>궁금한 점을 물어보세요. 정답을 바로 말하지 않고, 스스로 찾도록 도와드릴게요.</p></article>`
+            : `<article class="ai-chat-message is-assistant"><p>궁금한 점을 물어보세요. 아주 쉬운 말로 스스로 찾도록 도와드릴게요.</p></article>`
         }
         ${
           state.aiChat?.isLoading
