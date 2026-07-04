@@ -20,6 +20,7 @@ test("entry screen uses the fixed presentation class code", () => {
 
   assert.match(html, /id="class-code"[^>]*value="KOR-01"/);
   assert.match(html, /id="class-code"[^>]*readonly/);
+  assert.doesNotMatch(html, /시연 수업 코드 KOR-01과 임시 닉네임/);
   assert.match(appSource, /const PRESENTATION_CLASS_CODE = "KOR-01"/);
   assert.match(appSource, /classCode: PRESENTATION_CLASS_CODE/);
 });

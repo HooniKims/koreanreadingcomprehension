@@ -175,6 +175,118 @@ button {
   min-height: 100vh;
 }
 
+.site-footer {
+  width: 100%;
+  border-top: 1px solid rgba(30, 57, 50, 0.12);
+  background: var(--paper);
+  color: var(--green-house);
+}
+
+.footer-inner {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 18px;
+  width: min(100%, 1440px);
+  margin: 0 auto;
+  padding: 20px clamp(24px, 4vw, 64px);
+}
+
+.footer-brand,
+.footer-contact {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.footer-brand {
+  font-weight: 900;
+}
+
+.footer-contact {
+  justify-self: end;
+  color: var(--ink-soft);
+  font-weight: 700;
+}
+
+.footer-middle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.footer-middle a {
+  color: var(--green-house);
+  font-size: 14px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.footer-middle a:hover,
+.footer-middle a:focus-visible {
+  color: var(--green-accent);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  outline: none;
+}
+
+.legal-page {
+  min-height: 100vh;
+  background: var(--cream);
+}
+
+.legal-main {
+  width: min(100%, 960px);
+  margin: 0 auto;
+  padding: 56px clamp(22px, 5vw, 48px) 72px;
+}
+
+.legal-back {
+  display: inline-flex;
+  margin-bottom: 28px;
+  color: var(--green-house);
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.legal-back:hover,
+.legal-back:focus-visible {
+  color: var(--green-accent);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  outline: none;
+}
+
+.legal-document {
+  display: grid;
+  gap: 18px;
+  color: var(--ink);
+}
+
+.legal-document h1 {
+  margin: 0 0 6px;
+  color: var(--green-star);
+  font-size: clamp(34px, 5vw, 52px);
+  line-height: 1.15;
+}
+
+.legal-document h2 {
+  margin: 22px 0 0;
+  color: var(--green-house);
+  font-size: 22px;
+  line-height: 1.35;
+}
+
+.legal-document p {
+  margin: 0;
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1.8;
+  word-break: keep-all;
+}
+
 .lesson-hero {
   display: grid;
   gap: 16px;
@@ -707,6 +819,19 @@ button {
   animation: collectIn 0.65s var(--ease-out) var(--delay) both;
 }
 
+.center-chip[draggable="true"] {
+  cursor: grab;
+}
+
+.center-chip[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+.center-chip[draggable="true"]:focus-visible {
+  outline: 3px solid rgba(203, 162, 88, 0.78);
+  outline-offset: 3px;
+}
+
 .center-chip-header {
   display: flex;
   align-items: flex-start;
@@ -814,6 +939,12 @@ button {
 .student-summary-form textarea:focus {
   border-color: var(--gold);
   box-shadow: 0 0 0 4px rgba(203, 162, 88, 0.22);
+}
+
+.student-summary-form textarea.is-drop-target {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 5px rgba(203, 162, 88, 0.32);
+  background: #fff;
 }
 
 .summary-actions {
@@ -1245,14 +1376,21 @@ button {
   color: var(--coral);
 }
 
+.help-action-wrap {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+
 .help-confirmation {
   width: fit-content;
-  margin: -8px 0 20px;
-  padding: 10px 14px;
-  border: 1px solid rgba(0, 117, 74, 0.24);
-  border-radius: 8px;
-  background: rgba(212, 233, 226, 0.72);
-  color: var(--green-house);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--green-accent);
+  font-size: 14px;
   font-weight: 900;
   line-height: 1.45;
 }
@@ -2027,6 +2165,16 @@ button {
 
   .teacher-row {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .footer-inner {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .footer-contact {
+    justify-self: center;
   }
 }
 

@@ -20,9 +20,15 @@ test("human help button is labeled broadly as help, not teacher-only help", () =
 
   assert.match(renderSource, />도움!</);
   assert.match(renderSource, />도움 요청</);
-  assert.match(renderSource, /class="help-confirmation"/);
+  assert.match(
+    renderSource,
+    /<div class="help-action-wrap">[\s\S]*<button class="help-action" type="button">도움!<\/button>[\s\S]*class="help-confirmation"/,
+  );
   assert.match(renderSource, /도움을 요청했어요!/);
   assert.match(styles, /\.help-confirmation\s*{/);
+  assert.match(styles, /\.help-confirmation\s*{[^}]*padding:\s*0;/s);
+  assert.match(styles, /\.help-confirmation\s*{[^}]*background:\s*transparent;/s);
+  assert.match(styles, /\.help-confirmation\s*{[^}]*color:\s*var\(--green-accent\);/s);
   assert.doesNotMatch(renderSource, /선생님 도움/);
 });
 
@@ -186,6 +192,20 @@ test("completed paragraph renders a continue button after answer feedback", () =
   assert.match(renderSource, /handlers\.onParagraphContinue/);
   assert.match(renderSource, /다음 문단으로/);
   assert.match(renderSource, /문단 요약으로/);
+});
+
+test("overall summary accepts dragged paragraph boxes into the summary textarea", () => {
+  const renderSource = readFileSync(new URL("../src/render.js", import.meta.url), "utf8");
+  const styles = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
+
+  assert.match(renderSource, /class="center-chip"[\s\S]*draggable="true"/);
+  assert.match(renderSource, /data-summary-text=/);
+  assert.match(renderSource, /wireOverallSummaryDrop\(summaryEl\)/);
+  assert.match(renderSource, /dataTransfer\?\.setData\("text\/plain"/);
+  assert.match(renderSource, /insertDraggedSummaryText/);
+  assert.match(renderSource, /querySelector\("#student-summary"\)/);
+  assert.match(styles, /\.center-chip\[draggable="true"\]\s*{/);
+  assert.match(styles, /\.student-summary-form textarea\.is-drop-target\s*{/);
 });
 
 test("teacher dashboard has an explicit demo reset control", () => {

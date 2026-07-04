@@ -61,7 +61,16 @@ export function renderParagraph(lesson, state, handlers) {
           <p class="paragraph-kicker">${escapeHtml(paragraph.label)}</p>
           <h2>${escapeHtml(paragraph.sectionTitle)}</h2>
         </div>
-        <button class="help-action" type="button">도움!</button>
+        <div class="help-action-wrap">
+          <button class="help-action" type="button">도움!</button>
+          ${
+            state.ui.helpMessage
+              ? `<span class="help-confirmation" role="status">${escapeHtml(
+                  state.ui.helpMessage || "도움을 요청했어요!",
+                )}</span>`
+              : ""
+          }
+        </div>
       </div>
       <p class="task-text">문장을 눌러 중심문장을 고르고, 왜 그렇게 생각했는지 작성하세요.</p>
       <div class="paragraph-workspace">
@@ -456,14 +465,23 @@ function renderOverallSummary(lesson, state, handlers) {
       <h2>문단별 요약을 참고해서 글 전체를 요약하세요.</h2>
       <div class="collected-sentences">
         ${summaries
-          .map(
-            ({ paragraph, summary }) => `
-              <div class="center-chip">
+          .map(({ paragraph, summary }) => {
+            const summaryText = summary?.text ?? paragraph.modelSummary;
+
+            return `
+              <div
+                class="center-chip"
+                draggable="true"
+                tabindex="0"
+                role="button"
+                aria-label="${escapeHtml(`${paragraph.label} 요약 문장 넣기`)}"
+                data-summary-text="${escapeHtml(summaryText)}"
+              >
                 <span>${escapeHtml(paragraph.label)}</span>
-                <p>${escapeHtml(summary?.text ?? paragraph.modelSummary)}</p>
+                <p>${escapeHtml(summaryText)}</p>
               </div>
-            `,
-          )
+            `;
+          })
           .join("")}
       </div>
       <form class="student-summary-form">
@@ -497,6 +515,7 @@ function renderOverallSummary(lesson, state, handlers) {
   `;
 
   wireCommonHandlers(summaryEl, handlers);
+  wireOverallSummaryDrop(summaryEl);
   summaryEl.querySelector(".student-summary-form").addEventListener("submit", (event) => {
     event.preventDefault();
     handlers.onOverallSubmit(summaryEl.querySelector("#student-summary").value);
@@ -663,11 +682,6 @@ function renderModeTools(state) {
     <div class="sync-banner" data-online="${state.sync.isOnline}">
       ${escapeHtml(state.sync.message)}
     </div>
-    ${
-      state.ui.helpMessage
-        ? `<p class="help-confirmation" role="status">${escapeHtml(state.ui.helpMessage || "도움을 요청했어요!")}</p>`
-        : ""
-    }
   `;
 }
 
@@ -706,6 +720,82 @@ function wireCardSorting(container, handlers) {
       handlers.onMoveCard(index, index + direction);
     });
   });
+}
+
+function wireOverallSummaryDrop(container) {
+  const summaryInput = container.querySelector("#student-summary");
+
+  if (!summaryInput) {
+    return;
+  }
+
+  container.querySelectorAll(".center-chip").forEach((chip) => {
+    chip.addEventListener("dragstart", (event) => {
+      const summaryText = chip.dataset.summaryText ?? "";
+
+      if (event.dataTransfer) {
+        event.dataTransfer.effectAllowed = "copy";
+        event.dataTransfer.setData("text/plain", summaryText);
+        event.dataTransfer.setData("application/x-summary-text", summaryText);
+      }
+    });
+
+    chip.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") {
+        return;
+      }
+
+      event.preventDefault();
+      insertDraggedSummaryText(summaryInput, chip.dataset.summaryText);
+    });
+  });
+
+  summaryInput.addEventListener("dragover", (event) => {
+    event.preventDefault();
+
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = "copy";
+    }
+
+    summaryInput.classList.add("is-drop-target");
+  });
+
+  summaryInput.addEventListener("dragleave", () => {
+    summaryInput.classList.remove("is-drop-target");
+  });
+
+  summaryInput.addEventListener("drop", (event) => {
+    event.preventDefault();
+    summaryInput.classList.remove("is-drop-target");
+
+    const summaryText =
+      event.dataTransfer?.getData("application/x-summary-text") ||
+      event.dataTransfer?.getData("text/plain") ||
+      "";
+
+    insertDraggedSummaryText(summaryInput, summaryText);
+  });
+}
+
+function insertDraggedSummaryText(input, text) {
+  const summaryText = String(text ?? "").trim();
+
+  if (!summaryText) {
+    return;
+  }
+
+  const start = typeof input.selectionStart === "number" ? input.selectionStart : input.value.length;
+  const end = typeof input.selectionEnd === "number" ? input.selectionEnd : start;
+  const before = input.value.slice(0, start);
+  const after = input.value.slice(end);
+  const prefix = before && !/\s$/.test(before) ? " " : "";
+  const suffix = after && !/^\s/.test(after) ? " " : "";
+  const nextCursor = before.length + prefix.length + summaryText.length;
+
+  input.value = `${before}${prefix}${summaryText}${suffix}${after}`;
+  input.focus();
+  input.setSelectionRange?.(nextCursor, nextCursor);
+  input.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
 function escapeHtml(value) {
