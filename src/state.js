@@ -373,12 +373,17 @@ export function submitOverallSummary(state, summaryText) {
     message: "전체 글의 흐름이 잘 드러나게 정리했습니다.",
   };
   state.overallSummary.isComplete = true;
-  state.overallSummary.modelVisible = true;
+  state.overallSummary.modelVisible = false;
   state.phase = "done";
   state.isComplete = true;
   registerFastFinisher(state);
   markPendingSave(state);
   return state.overallSummary.feedback;
+}
+
+export function showOverallModelAnswer(state) {
+  state.overallSummary.modelVisible = true;
+  markPendingSave(state);
 }
 
 export function requestHelp(state, stage) {

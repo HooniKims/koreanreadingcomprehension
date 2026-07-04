@@ -6,6 +6,7 @@ import {
   appendAiChatMessage,
   closeAiChat,
   enterClassroom,
+  getModelOverallSummary,
   moveNext,
   moveSummaryCard,
   openAiChat,
@@ -14,6 +15,7 @@ import {
   requestHelp,
   requestParagraphCoach,
   setAiChatLoading,
+  showOverallModelAnswer,
   submitParagraphSummaries,
   submitOverallSummary,
   submitParagraphWork,
@@ -241,4 +243,19 @@ test("overall summary is coached when too short and accepted when it shows topic
   );
   assert.equal(acceptedResult.status, "complete");
   assert.equal(state.overallSummary.isComplete, true);
+  assert.equal(state.overallSummary.modelVisible, false);
+
+  showOverallModelAnswer(state);
+  assert.equal(state.overallSummary.modelVisible, true);
+});
+
+test("model overall summary keeps paragraph summaries and connects them naturally", () => {
+  const modelSummary = getModelOverallSummary(lesson);
+
+  lesson.paragraphs.forEach((paragraph) => {
+    assert.match(modelSummary, new RegExp(paragraph.modelSummary.replaceAll(".", "\\.")));
+  });
+
+  assert.ok(modelSummary.split(".").filter(Boolean).length >= lesson.paragraphs.length);
+  assert.match(modelSummary, /또한|하지만|먼저|다음으로|따라서/);
 });

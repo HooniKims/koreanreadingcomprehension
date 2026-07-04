@@ -22,6 +22,7 @@ import {
   setAiChatLoading,
   setConnectionState,
   setView,
+  showOverallModelAnswer,
   submitOverallSummary,
   submitParagraphSummaries,
   submitParagraphWork,
@@ -261,6 +262,11 @@ const handlers = {
     submitOverallSummary(state, summaryText);
     persist();
     paint({ scrollTop: true });
+  },
+  onShowOverallModelAnswer() {
+    showOverallModelAnswer(state);
+    persist();
+    paint();
   },
   onDismissHelp(requestId) {
     dismissHelpRequest(state, requestId);

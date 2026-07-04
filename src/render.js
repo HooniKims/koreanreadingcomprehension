@@ -463,6 +463,7 @@ function renderOverallSummary(lesson, state, handlers) {
     <section class="summary-panel">
       <p class="eyebrow">전체 종합 요약</p>
       <h2>문단별 요약을 참고해서 글 전체를 요약하세요.</h2>
+      <p class="summary-instruction">드래그 해서 문장을 넣고, 자연스럽게 이어질 수 있도록 다듬어주세요.</p>
       <div class="collected-sentences">
         ${summaries
           .map(({ paragraph, summary }) => {
@@ -508,6 +509,11 @@ function renderOverallSummary(lesson, state, handlers) {
         }
         <div class="summary-actions">
           <button class="secondary-action restart-summary" type="button">처음부터 다시</button>
+          ${
+            state.overallSummary.isComplete && !state.overallSummary.modelVisible
+              ? `<button class="model-answer-button" type="button">모범 답안 보기</button>`
+              : ""
+          }
           <button class="summary-submit" type="submit">전체 요약 제출</button>
         </div>
       </form>
@@ -521,6 +527,7 @@ function renderOverallSummary(lesson, state, handlers) {
     handlers.onOverallSubmit(summaryEl.querySelector("#student-summary").value);
   });
   summaryEl.querySelector(".restart-summary").addEventListener("click", handlers.onRestart);
+  summaryEl.querySelector(".model-answer-button")?.addEventListener("click", handlers.onShowOverallModelAnswer);
 }
 
 export function renderTeacherDashboard(lesson, state, handlers) {

@@ -208,6 +208,22 @@ test("overall summary accepts dragged paragraph boxes into the summary textarea"
   assert.match(styles, /\.student-summary-form textarea\.is-drop-target\s*{/);
 });
 
+test("overall summary guides students and reveals the model answer through a button", () => {
+  const renderSource = readFileSync(new URL("../src/render.js", import.meta.url), "utf8");
+  const appSource = readFileSync(new URL("../src/app.js", import.meta.url), "utf8");
+  const styles = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
+
+  assert.match(renderSource, /드래그 해서 문장을 넣고, 자연스럽게 이어질 수 있도록 다듬어주세요\./);
+  assert.match(renderSource, /class="summary-instruction"/);
+  assert.match(renderSource, /class="model-answer-button"/);
+  assert.match(renderSource, />모범 답안 보기</);
+  assert.match(renderSource, /handlers\.onShowOverallModelAnswer/);
+  assert.match(appSource, /showOverallModelAnswer/);
+  assert.match(appSource, /onShowOverallModelAnswer/);
+  assert.match(styles, /\.summary-instruction\s*{/);
+  assert.match(styles, /\.model-answer-button\s*{/);
+});
+
 test("teacher dashboard has an explicit demo reset control", () => {
   const renderSource = readFileSync(new URL("../src/render.js", import.meta.url), "utf8");
   const appSource = readFileSync(new URL("../src/app.js", import.meta.url), "utf8");
