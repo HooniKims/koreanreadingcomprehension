@@ -83,6 +83,7 @@ export function renderParagraph(lesson, state, handlers) {
         </section>
         <section class="response-column" aria-label="답변과 AI 도움">
           ${renderFeedback(state, response)}
+          ${renderSocraticPanel(response)}
           ${renderParagraphActions(lesson, state, response)}
           <section class="ai-coach-box" aria-label="AI 코치 도움">
             <div>
@@ -143,7 +144,65 @@ export function renderParagraph(lesson, state, handlers) {
       reason: activityForm?.get("reason") ?? response?.reason ?? "",
     });
   });
+  stageEl.querySelector(".socratic-form textarea")?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      event.currentTarget.form?.requestSubmit();
+    }
+  });
+  stageEl.querySelector(".socratic-form")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    handlers.onDialogueSubmit({
+      answer: form.get("answer"),
+    });
+  });
   scrollAiChatToLatestAfterLayout();
+  scrollSocraticToLatestAfterLayout();
+}
+
+function renderSocraticPanel(response) {
+  const dialogue = response?.dialogue;
+
+  if (response?.isComplete || !dialogue || dialogue.messages.length === 0) {
+    return "";
+  }
+
+  return `
+    <section class="socratic-panel" aria-label="AI 코치와 생각 나누기">
+      <p class="coach-title">AI 코치와 생각 나누기</p>
+      <div class="socratic-messages" aria-live="polite">
+        ${dialogue.messages.map(renderSocraticMessage).join("")}
+        ${
+          dialogue.isLoading
+            ? `<article class="socratic-message is-assistant is-loading"><p>다음 질문을 생각하는 중...</p></article>`
+            : ""
+        }
+      </div>
+      <form class="socratic-form">
+        <textarea
+          name="answer"
+          rows="2"
+          aria-label="AI 코치의 질문에 답하기"
+          placeholder="코치의 질문에 생각을 적어 보세요."
+          ${dialogue.isLoading ? "disabled" : ""}
+        ></textarea>
+        <button class="socratic-send" type="submit" ${dialogue.isLoading ? "disabled" : ""}>${
+          dialogue.isLoading ? "기다리는 중" : "답하기"
+        }</button>
+      </form>
+    </section>
+  `;
+}
+
+function renderSocraticMessage(message) {
+  const isUser = message.role === "user";
+
+  return `
+    <article class="socratic-message ${isUser ? "is-user" : "is-assistant"}">
+      ${isUser ? `<p>${escapeHtml(message.message)}</p>` : renderCoachMarkdown(message.message)}
+    </article>
+  `;
 }
 
 function renderSentenceButton(sentence, index, selectedIndex) {
@@ -319,6 +378,23 @@ function scrollAiChatToLatestAfterLayout() {
 
   scrollAiChatToLatest();
   requestAnimationFrame?.(scrollAiChatToLatest);
+}
+
+function scrollSocraticToLatest() {
+  const messagesEl = stageEl.querySelector(".socratic-messages");
+
+  if (!messagesEl) {
+    return;
+  }
+
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function scrollSocraticToLatestAfterLayout() {
+  const requestAnimationFrame = globalThis.requestAnimationFrame;
+
+  scrollSocraticToLatest();
+  requestAnimationFrame?.(scrollSocraticToLatest);
 }
 
 export function renderSummary(lesson, state, handlers) {

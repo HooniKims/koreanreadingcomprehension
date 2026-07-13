@@ -236,3 +236,32 @@ test("teacher dashboard has an explicit demo reset control", () => {
   assert.match(appSource, /onTeacherReset/);
   assert.match(styles, /\.teacher-reset-button\s*{/);
 });
+
+test("socratic dialogue panel is wired from render to app handler with styles", () => {
+  const renderSource = readFileSync(new URL("../src/render.js", import.meta.url), "utf8");
+  const appSource = readFileSync(new URL("../src/app.js", import.meta.url), "utf8");
+  const styles = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
+
+  assert.match(renderSource, /renderSocraticPanel/);
+  assert.match(renderSource, /class="socratic-panel"/);
+  assert.match(renderSource, /AI 코치와 생각 나누기/);
+  assert.match(renderSource, /handlers\.onDialogueSubmit/);
+  assert.match(appSource, /async onDialogueSubmit\(payload\)/);
+  assert.match(appSource, /intent: "socratic"/);
+  assert.match(appSource, /appendDialogueMessage/);
+  assert.match(appSource, /setDialogueLoading/);
+  assert.match(styles, /\.socratic-panel\s*{/);
+  assert.match(styles, /\.socratic-messages\s*{/);
+  assert.match(styles, /\.socratic-message\.is-user\s*{/);
+  assert.match(styles, /\.socratic-form\s*{/);
+  assert.match(styles, /\.socratic-send\s*{/);
+});
+
+test("socratic dialogue panel stacks comfortably on mobile screens", () => {
+  const styles = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
+  const mobileBlock = styles.slice(styles.indexOf("@media (max-width: 640px)"));
+
+  assert.match(mobileBlock, /\.socratic-form\s*{[^}]*grid-template-columns:\s*1fr;/s);
+  assert.match(mobileBlock, /\.socratic-send\s*{[^}]*width:\s*100%;/s);
+  assert.match(mobileBlock, /\.socratic-messages\s*{[^}]*max-height:/s);
+});

@@ -4,9 +4,12 @@ import { lesson } from "../src/data.js";
 import {
   createInitialState,
   appendAiChatMessage,
+  appendDialogueMessage,
   closeAiChat,
   enterClassroom,
+  getDialogue,
   getModelOverallSummary,
+  hydrateState,
   moveNext,
   moveSummaryCard,
   openAiChat,
@@ -14,7 +17,10 @@ import {
   resetEntry,
   requestHelp,
   requestParagraphCoach,
+  selectSentence,
+  serializeState,
   setAiChatLoading,
+  setDialogueLoading,
   showOverallModelAnswer,
   submitParagraphSummaries,
   submitOverallSummary,
@@ -213,6 +219,66 @@ test("AI coach chat conversation can be cleared while keeping the popup open", a
   assert.equal(state.aiChat.isOpen, true);
   assert.equal(state.aiChat.isLoading, false);
   assert.deepEqual(state.aiChat.messages, []);
+});
+
+test("selecting a sentence starts a socratic dialogue without revealing the answer", () => {
+  const state = createInitialState();
+  enterClassroom(state, { classCode: "KOR-101", nickname: "3번" });
+
+  selectSentence(state, lesson, 0);
+
+  const dialogue = getDialogue(state, lesson.paragraphs[0].id);
+  assert.ok(dialogue);
+  assert.equal(dialogue.messages.length, 1);
+  assert.equal(dialogue.messages[0].role, "assistant");
+  assert.match(dialogue.messages[0].message, /1번 문장을 골랐네요/);
+  assert.doesNotMatch(dialogue.messages[0].message, /정답/);
+
+  selectSentence(state, lesson, 0);
+  assert.equal(getDialogue(state, lesson.paragraphs[0].id).messages.length, 1);
+
+  selectSentence(state, lesson, 1);
+  const updated = getDialogue(state, lesson.paragraphs[0].id);
+  assert.equal(updated.messages.length, 2);
+  assert.match(updated.messages[1].message, /이번에는 2번 문장을 골랐네요/);
+});
+
+test("socratic dialogue stores student answers and tracks turns and loading", () => {
+  const state = createInitialState();
+  enterClassroom(state, { classCode: "KOR-101", nickname: "3번" });
+  selectSentence(state, lesson, 0);
+
+  appendDialogueMessage(state, lesson, "user", "  동물 이야기라서요  ");
+  appendDialogueMessage(state, lesson, "assistant", "다른 문장들도 동물 이야기를 하고 있나요?");
+  setDialogueLoading(state, lesson, true);
+
+  const dialogue = getDialogue(state, lesson.paragraphs[0].id);
+  assert.equal(dialogue.messages.length, 3);
+  assert.equal(dialogue.messages[1].role, "user");
+  assert.equal(dialogue.messages[1].message, "동물 이야기라서요");
+  assert.equal(dialogue.turn, 1);
+  assert.equal(dialogue.isLoading, true);
+
+  assert.equal(appendDialogueMessage(state, lesson, "user", "   "), null);
+  assert.equal(getDialogue(state, lesson.paragraphs[0].id).messages.length, 3);
+
+  setDialogueLoading(state, lesson, false);
+  assert.equal(getDialogue(state, lesson.paragraphs[0].id).isLoading, false);
+});
+
+test("hydrated dialogue never stays stuck in a loading state", () => {
+  const state = createInitialState();
+  enterClassroom(state, { classCode: "KOR-101", nickname: "3번" });
+  selectSentence(state, lesson, 0);
+  appendDialogueMessage(state, lesson, "user", "동물 이야기라서요");
+  setDialogueLoading(state, lesson, true);
+
+  const restored = hydrateState(JSON.parse(JSON.stringify(serializeState(state))));
+  const dialogue = getDialogue(restored, lesson.paragraphs[0].id);
+
+  assert.equal(dialogue.isLoading, false);
+  assert.equal(dialogue.messages.length, 2);
+  assert.equal(dialogue.turn, 1);
 });
 
 test("lastpage demo state jumps directly to the overall summary task", () => {

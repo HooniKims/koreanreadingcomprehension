@@ -1789,6 +1789,110 @@ button {
   cursor: wait;
 }
 
+.socratic-panel {
+  display: grid;
+  gap: 12px;
+  padding: 18px 20px;
+  border: 1px solid rgba(203, 162, 88, 0.4);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.socratic-panel .coach-title {
+  margin: 0;
+}
+
+.socratic-messages {
+  display: grid;
+  gap: 10px;
+  max-height: 320px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px;
+  scrollbar-gutter: stable;
+}
+
+.socratic-message {
+  max-width: 88%;
+  padding: 12px 14px;
+  border-radius: 8px;
+  line-height: 1.65;
+}
+
+.socratic-message p,
+.socratic-message ul,
+.socratic-message ol {
+  margin: 0;
+}
+
+.socratic-message.is-assistant {
+  justify-self: start;
+  background: rgba(203, 162, 88, 0.14);
+  color: var(--green-house);
+}
+
+.socratic-message.is-user {
+  justify-self: end;
+  background: var(--green-house);
+  color: #fff;
+}
+
+.socratic-message.is-loading {
+  border: 1px solid rgba(203, 162, 88, 0.34);
+  background: rgba(203, 162, 88, 0.2);
+  font-weight: 900;
+}
+
+.socratic-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.socratic-form textarea {
+  width: 100%;
+  min-height: 56px;
+  resize: vertical;
+  padding: 12px 14px;
+  border: 1px solid rgba(30, 57, 50, 0.18);
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  line-height: 1.6;
+  outline: none;
+}
+
+.socratic-form textarea:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 4px rgba(203, 162, 88, 0.2);
+}
+
+.socratic-send {
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 1px solid rgba(30, 57, 50, 0.16);
+  border-radius: 8px;
+  background: var(--green-house);
+  color: #fff;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.socratic-send:hover,
+.socratic-send:focus-visible {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 4px rgba(203, 162, 88, 0.2);
+  outline: none;
+}
+
+.socratic-form textarea:disabled,
+.socratic-send:disabled {
+  opacity: 0.72;
+  cursor: wait;
+}
+
 .activity-form {
   display: grid;
   gap: 16px;
@@ -2270,6 +2374,31 @@ button {
     right: 12px;
     bottom: 12px;
     width: calc(100vw - 24px);
+  }
+
+  .socratic-panel {
+    padding: 14px;
+  }
+
+  .socratic-messages {
+    max-height: 46vh;
+  }
+
+  .socratic-message {
+    max-width: 94%;
+  }
+
+  .socratic-form {
+    grid-template-columns: 1fr;
+  }
+
+  .socratic-form textarea {
+    min-height: 72px;
+  }
+
+  .socratic-send {
+    width: 100%;
+    min-height: 48px;
   }
 
   .card-move-actions {

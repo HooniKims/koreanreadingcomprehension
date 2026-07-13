@@ -3,11 +3,13 @@ import { requestAiCoach } from "./ai.js";
 import { lesson } from "./data.js";
 import {
   appendAiChatMessage,
+  appendDialogueMessage,
   clearAiChatMessages,
   closeAiChat,
   createInitialState,
   dismissHelpRequest,
   enterClassroom,
+  getDialogue,
   hydrateState,
   moveNext,
   moveSummaryCard,
@@ -20,6 +22,7 @@ import {
   selectSentence,
   serializeState,
   setAiChatLoading,
+  setDialogueLoading,
   setConnectionState,
   setView,
   showOverallModelAnswer,
@@ -44,6 +47,7 @@ const PRESENTATION_CLASS_CODE = "KOR-01";
 let state = loadState();
 let aiChatRequestVersion = 0;
 let paragraphCoachRequestVersion = 0;
+let socraticRequestVersion = 0;
 const startPageEl = document.querySelector("#start-page");
 const mainAppEl = document.querySelector("#main-app");
 const entryFormEl = document.querySelector("#entry-form");
@@ -232,6 +236,55 @@ const handlers = {
   onClearAiChat() {
     aiChatRequestVersion += 1;
     clearAiChatMessages(state);
+    persist();
+    paint();
+  },
+  async onDialogueSubmit(payload) {
+    const answer = String(payload.answer ?? "").trim();
+
+    if (!answer) {
+      return;
+    }
+
+    const requestVersion = ++socraticRequestVersion;
+    const paragraph = lesson.paragraphs[state.currentIndex];
+    const selectedIndex = state.selectedIndex;
+    appendDialogueMessage(state, lesson, "user", answer);
+    setDialogueLoading(state, lesson, true);
+    persist();
+    paint();
+
+    const dialogue = getDialogue(state, paragraph.id);
+    const history = (dialogue?.messages ?? []).map((entry) => ({
+      role: entry.role,
+      content: entry.message,
+    }));
+
+    const aiMessage = await requestAiCoach({
+      paragraph,
+      selectedIndex,
+      intent: "socratic",
+      history,
+      turn: dialogue?.turn ?? 0,
+    });
+
+    if (requestVersion !== socraticRequestVersion || lesson.paragraphs[state.currentIndex]?.id !== paragraph.id) {
+      const staleDialogue = getDialogue(state, paragraph.id);
+      if (staleDialogue) {
+        staleDialogue.isLoading = false;
+      }
+      persist();
+      paint();
+      return;
+    }
+
+    setDialogueLoading(state, lesson, false);
+    appendDialogueMessage(
+      state,
+      lesson,
+      "assistant",
+      aiMessage || "좋은 생각이에요. 고른 문장이 문단 전체 내용을 담고 있는지 한 번 더 살펴볼까요?",
+    );
     persist();
     paint();
   },

@@ -1,10 +1,12 @@
-// Netlify Function을 통해 서버 쪽 OpenAI 코칭을 요청하는 클라이언트 모듈
+// Netlify Function을 통해 서버 쪽 AI 코칭(Upstage 우선, OpenAI 폴백)을 요청하는 클라이언트 모듈
 export async function requestAiCoach({
   paragraph,
   selectedIndex,
   reason,
   question,
   intent,
+  history,
+  turn,
   onChunk,
   streamDelayMs = 14,
 }) {
@@ -24,6 +26,8 @@ export async function requestAiCoach({
         reason,
         question,
         intent,
+        ...(Array.isArray(history) ? { history } : {}),
+        ...(Number.isFinite(turn) ? { turn } : {}),
       }),
     });
 

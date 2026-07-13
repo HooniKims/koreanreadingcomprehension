@@ -1,5 +1,6 @@
 // 학습 진행, 코칭, 저장 가능한 활동 상태를 관리하는 모듈
 const OFF_TASK_PATTERN = /(모른다|몰라|하기 싫|하기싫|포기|정답|알려줘|귀찮|싫다|몰?루|ㅋㅋ|ㅎㅎ)/i;
+const MAX_DIALOGUE_MESSAGES = 24;
 const MIN_REASON_LENGTH = 8;
 const MIN_PARAGRAPH_SUMMARY_LENGTH = 10;
 const MIN_OVERALL_SUMMARY_LENGTH = 28;
@@ -163,14 +164,86 @@ export function selectSentence(state, lesson, sentenceIndex) {
   }
 
   state.selectedIndex = sentenceIndex;
+
+  const response = ensureParagraphResponse(state, paragraph);
+  response.selectedIndex = sentenceIndex;
+
+  const dialogue = ensureDialogue(response);
+  if (dialogue.lastSelectedIndex !== sentenceIndex) {
+    const question =
+      dialogue.messages.length === 0
+        ? `${sentenceIndex + 1}번 문장을 골랐네요. 어떤 점 때문에 이 문장이 이 문단의 중심문장이라고 생각했나요?`
+        : `이번에는 ${sentenceIndex + 1}번 문장을 골랐네요. 아까 고른 문장과 무엇이 달라 보였나요?`;
+    dialogue.messages = [...dialogue.messages, createDialogueEntry("assistant", question)].slice(
+      -MAX_DIALOGUE_MESSAGES,
+    );
+    dialogue.lastSelectedIndex = sentenceIndex;
+  }
+
   state.feedback = {
     status: "selected",
     isCorrect: sentenceIndex === paragraph.centerIndex,
     revealsAnswer: false,
-    message: `${sentenceIndex + 1}문장을 선택했습니다. 왜 중심문장인지 짧게 적어 보세요.`,
+    message: `${sentenceIndex + 1}문장을 선택했습니다. AI 코치의 질문에 답하며 생각을 정리해 보세요.`,
   };
   markPendingSave(state);
   return state.feedback;
+}
+
+export function getDialogue(state, paragraphId) {
+  return state.paragraphResponses[paragraphId]?.dialogue ?? null;
+}
+
+export function appendDialogueMessage(state, lesson, role, message) {
+  const paragraph = lesson.paragraphs[state.currentIndex];
+  const normalizedMessage = normalizeText(message);
+
+  if (!paragraph || !normalizedMessage) {
+    return null;
+  }
+
+  const dialogue = ensureDialogue(ensureParagraphResponse(state, paragraph));
+  const entry = createDialogueEntry(role, normalizedMessage);
+
+  dialogue.messages = [...dialogue.messages, entry].slice(-MAX_DIALOGUE_MESSAGES);
+  if (entry.role === "user") {
+    dialogue.turn += 1;
+  }
+  markPendingSave(state);
+  return entry;
+}
+
+export function setDialogueLoading(state, lesson, isLoading) {
+  const paragraph = lesson.paragraphs[state.currentIndex];
+
+  if (!paragraph) {
+    return null;
+  }
+
+  const dialogue = ensureDialogue(ensureParagraphResponse(state, paragraph));
+  dialogue.isLoading = Boolean(isLoading);
+  markPendingSave(state);
+  return dialogue;
+}
+
+function ensureDialogue(response) {
+  response.dialogue ??= {
+    messages: [],
+    turn: 0,
+    isLoading: false,
+    lastSelectedIndex: null,
+  };
+  response.dialogue.isLoading = Boolean(response.dialogue.isLoading);
+  return response.dialogue;
+}
+
+function createDialogueEntry(role, message) {
+  return {
+    id: createId("dialogue"),
+    role: role === "user" ? "user" : "assistant",
+    message,
+    createdAt: new Date().toISOString(),
+  };
 }
 
 export function submitParagraphWork(state, lesson, { reason }) {
@@ -536,6 +609,11 @@ export function hydrateState(savedState) {
   };
   state.solvedParagraphs = new Set(savedState.solvedParagraphs ?? []);
   state.paragraphResponses = savedState.paragraphResponses ?? {};
+  Object.values(state.paragraphResponses).forEach((response) => {
+    if (response?.dialogue) {
+      response.dialogue.isLoading = false;
+    }
+  });
   state.paragraphSummaries = savedState.paragraphSummaries ?? [];
   state.paragraphSummaryFeedback = savedState.paragraphSummaryFeedback ?? null;
   state.collectedCenters = savedState.collectedCenters ?? [];
@@ -576,6 +654,7 @@ function ensureParagraphResponse(state, paragraph) {
     coachingCount: 0,
     isComplete: false,
     feedback: null,
+    dialogue: null,
   };
 
   return state.paragraphResponses[paragraph.id];
