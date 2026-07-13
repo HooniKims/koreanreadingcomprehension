@@ -37,6 +37,7 @@ export function createInitialState() {
       feedback: null,
       isComplete: false,
       modelVisible: false,
+      dialogue: null,
     },
     sync: {
       isOnline: true,
@@ -101,7 +102,7 @@ export function setAiChatLoading(state, isLoading) {
 }
 
 export function appendAiChatMessage(state, role, message) {
-  const normalizedMessage = normalizeText(message);
+  const normalizedMessage = normalizeMultilineText(message);
 
   if (!normalizedMessage) {
     return null;
@@ -172,8 +173,8 @@ export function selectSentence(state, lesson, sentenceIndex) {
   if (dialogue.lastSelectedIndex !== sentenceIndex) {
     const question =
       dialogue.messages.length === 0
-        ? `${sentenceIndex + 1}번 문장을 골랐네요. 어떤 점 때문에 이 문장이 이 문단의 중심문장이라고 생각했나요?`
-        : `이번에는 ${sentenceIndex + 1}번 문장을 골랐네요. 아까 고른 문장과 무엇이 달라 보였나요?`;
+        ? `${sentenceIndex + 1}번 문장을 골랐네요.\n어떤 점 때문에 이 문장이 이 문단의 중심문장이라고 생각했나요?`
+        : `이번에는 ${sentenceIndex + 1}번 문장을 골랐네요.\n아까 고른 문장과 무엇이 달라 보였나요?`;
     dialogue.messages = [...dialogue.messages, createDialogueEntry("assistant", question)].slice(
       -MAX_DIALOGUE_MESSAGES,
     );
@@ -196,7 +197,7 @@ export function getDialogue(state, paragraphId) {
 
 export function appendDialogueMessage(state, lesson, role, message) {
   const paragraph = lesson.paragraphs[state.currentIndex];
-  const normalizedMessage = normalizeText(message);
+  const normalizedMessage = normalizeMultilineText(message);
 
   if (!paragraph || !normalizedMessage) {
     return null;
@@ -235,6 +236,61 @@ function ensureDialogue(response) {
   };
   response.dialogue.isLoading = Boolean(response.dialogue.isLoading);
   return response.dialogue;
+}
+
+export function getSummaryDialogue(state) {
+  return state.overallSummary.dialogue ?? null;
+}
+
+export function startSummaryDialogue(state) {
+  const dialogue = ensureSummaryDialogue(state);
+
+  if (dialogue.messages.length === 0) {
+    dialogue.messages = [
+      createDialogueEntry(
+        "assistant",
+        "이제 문단 요약들을 하나로 이어 볼 차례예요.\n이 글 전체는 무엇을 말하고 있는 것 같나요?",
+      ),
+    ];
+  }
+
+  markPendingSave(state);
+  return dialogue;
+}
+
+export function appendSummaryDialogueMessage(state, role, message) {
+  const normalizedMessage = normalizeMultilineText(message);
+
+  if (!normalizedMessage) {
+    return null;
+  }
+
+  const dialogue = ensureSummaryDialogue(state);
+  const entry = createDialogueEntry(role, normalizedMessage);
+
+  dialogue.messages = [...dialogue.messages, entry].slice(-MAX_DIALOGUE_MESSAGES);
+  if (entry.role === "user") {
+    dialogue.turn += 1;
+  }
+  markPendingSave(state);
+  return entry;
+}
+
+export function setSummaryDialogueLoading(state, isLoading) {
+  const dialogue = ensureSummaryDialogue(state);
+  dialogue.isLoading = Boolean(isLoading);
+  markPendingSave(state);
+  return dialogue;
+}
+
+function ensureSummaryDialogue(state) {
+  state.overallSummary.dialogue ??= {
+    messages: [],
+    turn: 0,
+    isLoading: false,
+  };
+  state.overallSummary.dialogue.isLoading = Boolean(state.overallSummary.dialogue.isLoading);
+  return state.overallSummary.dialogue;
 }
 
 function createDialogueEntry(role, message) {
@@ -384,6 +440,7 @@ export function submitSummaryOrder(state, correctOrder) {
 
   if (isCorrect) {
     state.phase = "overall";
+    startSummaryDialogue(state);
   }
 
   markPendingSave(state);
@@ -569,7 +626,9 @@ export function prepareLastPageDemoState(state, lesson) {
     feedback: null,
     isComplete: false,
     modelVisible: false,
+    dialogue: null,
   };
+  startSummaryDialogue(state);
   state.helpRequests = [];
   state.coachingLog = [];
   state.fastFinishers = [];
@@ -607,6 +666,9 @@ export function hydrateState(savedState) {
     ...createInitialState().overallSummary,
     ...savedState.overallSummary,
   };
+  if (state.overallSummary.dialogue) {
+    state.overallSummary.dialogue.isLoading = false;
+  }
   state.solvedParagraphs = new Set(savedState.solvedParagraphs ?? []);
   state.paragraphResponses = savedState.paragraphResponses ?? {};
   Object.values(state.paragraphResponses).forEach((response) => {
@@ -749,6 +811,15 @@ function isOffTask(text) {
 
 function normalizeText(value) {
   return String(value ?? "").replace(/\s+/g, " ").trim();
+}
+
+// 대화 메시지 전용: 코치가 문장마다 넣어 주는 줄바꿈은 살리고 나머지 공백만 정리한다.
+function normalizeMultilineText(value) {
+  return String(value ?? "")
+    .split("\n")
+    .map((line) => line.replace(/\s+/g, " ").trim())
+    .filter(Boolean)
+    .join("\n");
 }
 
 function createId(prefix) {

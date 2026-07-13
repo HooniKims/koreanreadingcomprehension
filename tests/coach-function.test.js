@@ -169,6 +169,100 @@ test("coach function prefers Upstage and keeps socratic questioning without reve
   }
 });
 
+test("coach function breaks each sentence onto its own line", async () => {
+  const originalFetch = globalThis.fetch;
+  const originalUpstageKey = process.env.UPSTAGE_API_KEY;
+
+  process.env.UPSTAGE_API_KEY = "upstage-test-key";
+  globalThis.fetch = async () =>
+    Response.json({
+      choices: [
+        {
+          message: {
+            content: "좋은 생각이에요. 소수점 4.5는 안 나눠요! 다음 문장은 어때요?",
+          },
+        },
+      ],
+    });
+
+  try {
+    const response = await handler({
+      httpMethod: "POST",
+      body: JSON.stringify({
+        intent: "socratic",
+        paragraph: { label: "1문단", sentences: ["첫 문장"], centerIndex: 0 },
+        selectedIndex: 0,
+      }),
+    });
+    const payload = JSON.parse(response.body);
+
+    assert.equal(
+      payload.message,
+      "좋은 생각이에요.\n소수점 4.5는 안 나눠요!\n다음 문장은 어때요?",
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+    process.env.UPSTAGE_API_KEY = originalUpstageKey;
+  }
+});
+
+test("coach function guides the overall summary without writing it for the student", async () => {
+  const originalFetch = globalThis.fetch;
+  const originalUpstageKey = process.env.UPSTAGE_API_KEY;
+  let requestBody = null;
+
+  process.env.UPSTAGE_API_KEY = "upstage-test-key";
+  globalThis.fetch = async (url, options) => {
+    requestBody = JSON.parse(options.body);
+    return Response.json({
+      choices: [{ message: { content: "글 전체가 무엇을 말하는 것 같나요?" } }],
+    });
+  };
+
+  try {
+    const response = await handler({
+      httpMethod: "POST",
+      body: JSON.stringify({
+        intent: "summary-socratic",
+        turn: 1,
+        history: [
+          { role: "assistant", content: "이 글 전체는 무엇을 말하고 있는 것 같나요?" },
+          { role: "user", content: "유전 공학 이야기 같아요" },
+        ],
+        summary: {
+          paragraphSummaries: [
+            { label: "1문단", text: "유전 공학은 유전자를 연구해 생물의 특징을 바꾸는 기술이다." },
+            { label: "2문단", text: "유전자 조작으로 병에 강한 작물을 만들 수 있다." },
+          ],
+          modelOverallSummary: "유전 공학은 생물의 특징을 바꾸는 기술로 장점과 걱정이 함께 있다.",
+          studentDraft: "유전 공학은 기술이다.",
+        },
+      }),
+    });
+
+    assert.equal(response.statusCode, 200);
+
+    const systemMessage = requestBody.messages[0];
+    assert.match(systemMessage.content, /요약문을 대신 써 주지 않는다/);
+    assert.match(systemMessage.content, /모범 요약의 문장이나 표현을 그대로 말하지 않는다/);
+    assert.match(systemMessage.content, /초등학교 4~5학년/);
+
+    const inputMessage = requestBody.messages[1];
+    assert.match(inputMessage.content, /문단 요약 목록/);
+    assert.match(inputMessage.content, /1\. 1문단: 유전 공학은/);
+    assert.match(inputMessage.content, /모범 전체 요약.*비공개 정보/);
+    assert.match(inputMessage.content, /학생이 지금까지 쓴 요약 초안: 유전 공학은 기술이다\./);
+    assert.match(inputMessage.content, /지금까지 학생이 답한 횟수: 1/);
+
+    const history = requestBody.messages.slice(2);
+    assert.equal(history.length, 2);
+    assert.equal(history[1].content, "유전 공학 이야기 같아요");
+  } finally {
+    globalThis.fetch = originalFetch;
+    process.env.UPSTAGE_API_KEY = originalUpstageKey;
+  }
+});
+
 test("coach function falls back to OpenAI when Upstage fails", async () => {
   const originalFetch = globalThis.fetch;
   const originalUpstageKey = process.env.UPSTAGE_API_KEY;

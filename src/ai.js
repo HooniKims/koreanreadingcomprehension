@@ -7,6 +7,7 @@ export async function requestAiCoach({
   intent,
   history,
   turn,
+  summary,
   onChunk,
   streamDelayMs = 14,
 }) {
@@ -17,17 +18,22 @@ export async function requestAiCoach({
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        paragraph: {
-          label: paragraph.label,
-          centerIndex: paragraph.centerIndex,
-          sentences: paragraph.sentences.map((sentence) => sentence.text),
-        },
+        ...(paragraph
+          ? {
+              paragraph: {
+                label: paragraph.label,
+                centerIndex: paragraph.centerIndex,
+                sentences: paragraph.sentences.map((sentence) => sentence.text),
+              },
+            }
+          : {}),
         selectedIndex,
         reason,
         question,
         intent,
         ...(Array.isArray(history) ? { history } : {}),
         ...(Number.isFinite(turn) ? { turn } : {}),
+        ...(summary && typeof summary === "object" ? { summary } : {}),
       }),
     });
 

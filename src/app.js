@@ -4,12 +4,15 @@ import { lesson } from "./data.js";
 import {
   appendAiChatMessage,
   appendDialogueMessage,
+  appendSummaryDialogueMessage,
   clearAiChatMessages,
   closeAiChat,
   createInitialState,
   dismissHelpRequest,
   enterClassroom,
   getDialogue,
+  getModelOverallSummary,
+  getSummaryDialogue,
   hydrateState,
   moveNext,
   moveSummaryCard,
@@ -23,6 +26,7 @@ import {
   serializeState,
   setAiChatLoading,
   setDialogueLoading,
+  setSummaryDialogueLoading,
   setConnectionState,
   setView,
   showOverallModelAnswer,
@@ -48,6 +52,7 @@ let state = loadState();
 let aiChatRequestVersion = 0;
 let paragraphCoachRequestVersion = 0;
 let socraticRequestVersion = 0;
+let summaryDialogueRequestVersion = 0;
 const startPageEl = document.querySelector("#start-page");
 const mainAppEl = document.querySelector("#main-app");
 const entryFormEl = document.querySelector("#entry-form");
@@ -283,7 +288,57 @@ const handlers = {
       state,
       lesson,
       "assistant",
-      aiMessage || "좋은 생각이에요. 고른 문장이 문단 전체 내용을 담고 있는지 한 번 더 살펴볼까요?",
+      aiMessage || "좋은 생각이에요.\n고른 문장이 문단 전체 내용을 담고 있는지 한 번 더 살펴볼까요?",
+    );
+    persist();
+    paint();
+  },
+  async onSummaryDialogueSubmit(payload) {
+    const answer = String(payload.answer ?? "").trim();
+
+    if (!answer) {
+      return;
+    }
+
+    const requestVersion = ++summaryDialogueRequestVersion;
+    state.overallSummary.text = String(payload.draft ?? "");
+    appendSummaryDialogueMessage(state, "user", answer);
+    setSummaryDialogueLoading(state, true);
+    persist();
+    paint();
+
+    const dialogue = getSummaryDialogue(state);
+    const history = (dialogue?.messages ?? []).map((entry) => ({
+      role: entry.role,
+      content: entry.message,
+    }));
+
+    const aiMessage = await requestAiCoach({
+      intent: "summary-socratic",
+      history,
+      turn: dialogue?.turn ?? 0,
+      summary: {
+        paragraphSummaries: state.paragraphSummaries.map(({ label, text }) => ({ label, text })),
+        modelOverallSummary: getModelOverallSummary(lesson),
+        studentDraft: String(payload.draft ?? ""),
+      },
+    });
+
+    if (requestVersion !== summaryDialogueRequestVersion || state.phase !== "overall") {
+      const staleDialogue = getSummaryDialogue(state);
+      if (staleDialogue) {
+        staleDialogue.isLoading = false;
+      }
+      persist();
+      paint();
+      return;
+    }
+
+    setSummaryDialogueLoading(state, false);
+    appendSummaryDialogueMessage(
+      state,
+      "assistant",
+      aiMessage || "좋은 생각이에요.\n문단 요약들을 글의 순서대로 이으면 전체 요약이 됩니다.\n첫 문단 요약부터 한 문장씩 붙여 볼까요?",
     );
     persist();
     paint();

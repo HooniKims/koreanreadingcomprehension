@@ -168,9 +168,23 @@ function renderSocraticPanel(response) {
     return "";
   }
 
+  return renderDialoguePanel(dialogue, "AI 코치와 생각 나누기");
+}
+
+function renderSummaryDialoguePanel(state) {
+  const dialogue = state.overallSummary?.dialogue;
+
+  if (state.overallSummary?.isComplete || !dialogue || dialogue.messages.length === 0) {
+    return "";
+  }
+
+  return renderDialoguePanel(dialogue, "AI 코치와 요약 만들기");
+}
+
+function renderDialoguePanel(dialogue, title) {
   return `
-    <section class="socratic-panel" aria-label="AI 코치와 생각 나누기">
-      <p class="coach-title">AI 코치와 생각 나누기</p>
+    <section class="socratic-panel" aria-label="${escapeHtml(title)}">
+      <p class="coach-title">${escapeHtml(title)}</p>
       <div class="socratic-messages" aria-live="polite">
         ${dialogue.messages.map(renderSocraticMessage).join("")}
         ${
@@ -381,7 +395,7 @@ function scrollAiChatToLatestAfterLayout() {
 }
 
 function scrollSocraticToLatest() {
-  const messagesEl = stageEl.querySelector(".socratic-messages");
+  const messagesEl = document.querySelector(".socratic-messages");
 
   if (!messagesEl) {
     return;
@@ -540,6 +554,7 @@ function renderOverallSummary(lesson, state, handlers) {
       <p class="eyebrow">전체 종합 요약</p>
       <h2>문단별 요약을 참고해서 글 전체를 요약하세요.</h2>
       <p class="summary-instruction">드래그 해서 문장을 넣고, 자연스럽게 이어질 수 있도록 다듬어주세요.</p>
+      ${renderSummaryDialoguePanel(state)}
       <div class="collected-sentences">
         ${summaries
           .map(({ paragraph, summary }) => {
@@ -604,6 +619,21 @@ function renderOverallSummary(lesson, state, handlers) {
   });
   summaryEl.querySelector(".restart-summary").addEventListener("click", handlers.onRestart);
   summaryEl.querySelector(".model-answer-button")?.addEventListener("click", handlers.onShowOverallModelAnswer);
+  summaryEl.querySelector(".socratic-form textarea")?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      event.currentTarget.form?.requestSubmit();
+    }
+  });
+  summaryEl.querySelector(".socratic-form")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    handlers.onSummaryDialogueSubmit({
+      answer: form.get("answer"),
+      draft: summaryEl.querySelector("#student-summary")?.value ?? "",
+    });
+  });
+  scrollSocraticToLatestAfterLayout();
 }
 
 export function renderTeacherDashboard(lesson, state, handlers) {

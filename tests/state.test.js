@@ -5,6 +5,7 @@ import {
   createInitialState,
   appendAiChatMessage,
   appendDialogueMessage,
+  appendSummaryDialogueMessage,
   closeAiChat,
   enterClassroom,
   getDialogue,
@@ -21,6 +22,7 @@ import {
   serializeState,
   setAiChatLoading,
   setDialogueLoading,
+  setSummaryDialogueLoading,
   showOverallModelAnswer,
   submitParagraphSummaries,
   submitOverallSummary,
@@ -264,6 +266,44 @@ test("socratic dialogue stores student answers and tracks turns and loading", ()
 
   setDialogueLoading(state, lesson, false);
   assert.equal(getDialogue(state, lesson.paragraphs[0].id).isLoading, false);
+});
+
+test("dialogue messages keep coach line breaks while trimming other whitespace", () => {
+  const state = createInitialState();
+  enterClassroom(state, { classCode: "KOR-101", nickname: "3번" });
+  selectSentence(state, lesson, 0);
+
+  appendDialogueMessage(state, lesson, "assistant", "좋은 생각이에요.\n  다음   문장은 어때요?  \n\n");
+
+  const dialogue = getDialogue(state, lesson.paragraphs[0].id);
+  assert.equal(dialogue.messages.at(-1).message, "좋은 생각이에요.\n다음 문장은 어때요?");
+});
+
+test("overall summary phase starts a coach dialogue that guides without answering", () => {
+  const state = createInitialState();
+  enterClassroom(state, { classCode: "KOR-101", nickname: "3번" });
+  state.cardOrder = lesson.paragraphs.map((paragraph) => paragraph.id);
+
+  submitSummaryOrder(state, lesson.paragraphs.map((paragraph) => paragraph.id));
+
+  assert.equal(state.phase, "overall");
+  const dialogue = state.overallSummary.dialogue;
+  assert.ok(dialogue);
+  assert.equal(dialogue.messages.length, 1);
+  assert.equal(dialogue.messages[0].role, "assistant");
+  assert.match(dialogue.messages[0].message, /이 글 전체는 무엇을 말하고/);
+
+  appendSummaryDialogueMessage(state, "user", "유전 공학 이야기예요");
+  appendSummaryDialogueMessage(state, "assistant", "그 생각을 요약의 첫 문장으로 적어 볼까요?");
+  setSummaryDialogueLoading(state, true);
+
+  assert.equal(dialogue.messages.length, 3);
+  assert.equal(dialogue.turn, 1);
+  assert.equal(dialogue.isLoading, true);
+
+  const restored = hydrateState(JSON.parse(JSON.stringify(serializeState(state))));
+  assert.equal(restored.overallSummary.dialogue.isLoading, false);
+  assert.equal(restored.overallSummary.dialogue.messages.length, 3);
 });
 
 test("hydrated dialogue never stays stuck in a loading state", () => {

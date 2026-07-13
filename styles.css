@@ -1825,6 +1825,11 @@ button {
   margin: 0;
 }
 
+.socratic-message p + p,
+.ai-chat-message p + p {
+  margin-top: 6px;
+}
+
 .socratic-message.is-assistant {
   justify-self: start;
   background: rgba(203, 162, 88, 0.14);
