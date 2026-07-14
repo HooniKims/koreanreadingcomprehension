@@ -301,3 +301,12 @@ test("next paragraph is previewed below the current one as read-only context", (
   assert.doesNotMatch(renderSource, /next-paragraph-preview[\s\S]{0,300}sentence-card/);
   assert.match(styles, /\.next-paragraph-preview\s*{/);
 });
+
+test("empty lesson stage is hidden during summary phases so it leaves no gap", () => {
+  const renderSource = readFileSync(new URL("../src/render.js", import.meta.url), "utf8");
+
+  assert.match(renderSource, /export function renderSummary[\s\S]{0,120}stageEl\.hidden = true;/);
+  assert.match(renderSource, /export function renderParagraph[\s\S]{0,400}stageEl\.hidden = false;/);
+  assert.match(renderSource, /export function scrollFeedbackIntoView/);
+  assert.match(renderSource, /scrollFeedbackIntoView[\s\S]{0,220}\.response-column \.coach-panel/);
+});

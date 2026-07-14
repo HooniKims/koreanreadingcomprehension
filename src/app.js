@@ -41,6 +41,7 @@ import {
   renderStaticHeader,
   renderSummary,
   renderTeacherDashboard,
+  scrollFeedbackIntoView,
   setParagraphSubmitPending,
   updateParagraphCoachPanel,
 } from "./render.js";
@@ -109,7 +110,12 @@ const handlers = {
 
     if (result.status !== "coaching") {
       persist();
-      paint({ scrollTop: result.status === "complete" || state.currentIndex !== previousIndex });
+      const movedParagraph = state.currentIndex !== previousIndex;
+      paint({ scrollTop: movedParagraph });
+      // 같은 문단에서 정답 처리되면 화면 상단이 아니라 정답 피드백으로 데려간다.
+      if (result.status === "complete" && !movedParagraph) {
+        scrollFeedbackIntoView();
+      }
       return;
     }
 

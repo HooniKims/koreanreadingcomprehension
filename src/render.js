@@ -52,6 +52,7 @@ export function renderParagraph(lesson, state, handlers) {
   const selectedIndex = response?.isComplete ? response.selectedIndex : state.selectedIndex;
 
   summaryEl.hidden = true;
+  stageEl.hidden = false;
   stageEl.replaceChildren();
   stageEl.innerHTML = `
     ${renderModeTools(state)}
@@ -400,6 +401,17 @@ function renderAiChatMessage(message) {
   `;
 }
 
+export function scrollFeedbackIntoView() {
+  const requestAnimationFrame = globalThis.requestAnimationFrame;
+  const focus = () => {
+    const panel =
+      stageEl.querySelector(".response-column .coach-panel") ?? stageEl.querySelector(".coach-panel");
+    panel?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  requestAnimationFrame?.(focus) ?? focus();
+}
+
 function scrollAiChatToLatest() {
   const messagesEl = stageEl.querySelector(".ai-chat-messages");
 
@@ -436,6 +448,7 @@ function scrollSocraticToLatestAfterLayout() {
 
 export function renderSummary(lesson, state, handlers) {
   stageEl.replaceChildren();
+  stageEl.hidden = true;
   summaryEl.hidden = false;
 
   if (state.phase === "summaries") {
@@ -661,6 +674,7 @@ function renderOverallSummary(lesson, state, handlers) {
 
 export function renderTeacherDashboard(lesson, state, handlers) {
   summaryEl.hidden = true;
+  stageEl.hidden = false;
   stageEl.replaceChildren();
 
   const completedCount = state.solvedParagraphs.size;
