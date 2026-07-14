@@ -308,3 +308,35 @@ test("coach function falls back to OpenAI when Upstage fails", async () => {
     process.env.OPENAI_API_KEY = originalApiKey;
   }
 });
+
+test("socratic coach receives the next paragraph as visible flow context", async () => {
+  const originalFetch = globalThis.fetch;
+  const originalUpstageKey = process.env.UPSTAGE_API_KEY;
+  let requestBody = null;
+
+  process.env.UPSTAGE_API_KEY = "upstage-test-key";
+  globalThis.fetch = async (url, options) => {
+    requestBody = JSON.parse(options.body);
+    return Response.json({ choices: [{ message: { content: "다음 문단은 무엇을 이어받고 있나요?" } }] });
+  };
+
+  try {
+    await handler({
+      httpMethod: "POST",
+      body: JSON.stringify({
+        intent: "socratic",
+        paragraph: { label: "1문단", sentences: ["첫 문장", "둘째 문장"], centerIndex: 1 },
+        selectedIndex: 0,
+        nextParagraph: { label: "2문단", text: "유전자 조작은 유전 공학을 활용하는 방법 중 하나이다." },
+      }),
+    });
+
+    const inputMessage = requestBody.messages[1];
+    assert.match(inputMessage.content, /다음 문단 미리 보기/);
+    assert.match(inputMessage.content, /2문단 - 유전자 조작은/);
+    assert.match(requestBody.messages[0].content, /다음 문단이 이어받아 설명하는지/);
+  } finally {
+    globalThis.fetch = originalFetch;
+    process.env.UPSTAGE_API_KEY = originalUpstageKey;
+  }
+});

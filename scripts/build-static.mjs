@@ -25,3 +25,6 @@ await Promise.all(
 
 await mkdir(`${outputDirectory}/lastpage`, { recursive: true });
 await cp("index.html", `${outputDirectory}/lastpage/index.html`, { force: true });
+
+await mkdir(`${outputDirectory}/teacher`, { recursive: true });
+await cp("index.html", `${outputDirectory}/teacher/index.html`, { force: true });

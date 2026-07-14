@@ -63,6 +63,14 @@ const startButtonEl = document.querySelector("#start-lesson");
 function paint(options = {}) {
   renderProgress(lesson, state);
 
+  // 교사용 화면은 /teacher 전용 경로에서만 열리고 입장 절차 없이 바로 보인다.
+  if (state.ui.view === "teacher") {
+    startPageEl.hidden = true;
+    mainAppEl.hidden = false;
+    renderTeacherDashboard(lesson, state, handlers);
+    return;
+  }
+
   if (!state.classroom.isEntered) {
     startPageEl.hidden = false;
     mainAppEl.hidden = true;
@@ -71,11 +79,6 @@ function paint(options = {}) {
 
   startPageEl.hidden = true;
   mainAppEl.hidden = false;
-
-  if (state.ui.view === "teacher") {
-    renderTeacherDashboard(lesson, state, handlers);
-    return;
-  }
 
   if (state.phase === "paragraphs") {
     renderParagraph(lesson, state, handlers);
@@ -92,11 +95,6 @@ function paint(options = {}) {
 }
 
 const handlers = {
-  onView(view) {
-    setView(state, view);
-    persist();
-    paint();
-  },
   onSelect(sentenceIndex) {
     paragraphCoachRequestVersion += 1;
     selectSentence(state, lesson, sentenceIndex);
@@ -265,12 +263,21 @@ const handlers = {
       content: entry.message,
     }));
 
+    const nextParagraph = lesson.paragraphs[state.currentIndex + 1];
     const aiMessage = await requestAiCoach({
       paragraph,
       selectedIndex,
       intent: "socratic",
       history,
       turn: dialogue?.turn ?? 0,
+      ...(nextParagraph
+        ? {
+            nextParagraph: {
+              label: nextParagraph.label,
+              text: nextParagraph.sentences.map((sentence) => sentence.text).join(" "),
+            },
+          }
+        : {}),
     });
 
     if (requestVersion !== socraticRequestVersion || lesson.paragraphs[state.currentIndex]?.id !== paragraph.id) {
@@ -467,24 +474,34 @@ function loadState() {
     if (isDemoLastPage) {
       const demoState = prepareLastPageDemoState(createInitialState(), lesson);
       setConnectionState(demoState, navigator.onLine);
-      return demoState;
+      return applyViewFromPath(demoState);
     }
 
     const saved = window.localStorage.getItem(STORAGE_KEY);
     const nextState = saved ? hydrateState(JSON.parse(saved)) : createInitialState();
     setConnectionState(nextState, navigator.onLine);
-    return nextState;
+    return applyViewFromPath(nextState);
   } catch {
     const fallbackState = isDemoLastPage
       ? prepareLastPageDemoState(createInitialState(), lesson)
       : createInitialState();
     setConnectionState(fallbackState, navigator.onLine);
-    return fallbackState;
+    return applyViewFromPath(fallbackState);
   }
+}
+
+// 화면 종류는 저장값이 아니라 접속 경로가 결정한다. /teacher에서만 교사용 화면이 열린다.
+function applyViewFromPath(nextState) {
+  setView(nextState, isTeacherPath() ? "teacher" : "student");
+  return nextState;
 }
 
 function isLastPageDemoPath() {
   return window.location.pathname.replace(/\/+$/, "") === "/lastpage";
+}
+
+function isTeacherPath() {
+  return window.location.pathname.replace(/\/+$/, "") === "/teacher";
 }
 
 renderStaticHeader(lesson);

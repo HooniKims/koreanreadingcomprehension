@@ -8,6 +8,7 @@ export async function requestAiCoach({
   history,
   turn,
   summary,
+  nextParagraph,
   onChunk,
   streamDelayMs = 14,
 }) {
@@ -34,6 +35,7 @@ export async function requestAiCoach({
         ...(Array.isArray(history) ? { history } : {}),
         ...(Number.isFinite(turn) ? { turn } : {}),
         ...(summary && typeof summary === "object" ? { summary } : {}),
+        ...(nextParagraph && typeof nextParagraph === "object" ? { nextParagraph } : {}),
       }),
     });
 

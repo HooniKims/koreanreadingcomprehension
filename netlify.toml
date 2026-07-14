@@ -19,3 +19,13 @@ status = 200
 from = "/lastpage/"
 to = "/index.html"
 status = 200
+
+[[redirects]]
+from = "/teacher"
+to = "/index.html"
+status = 200
+
+[[redirects]]
+from = "/teacher/"
+to = "/index.html"
+status = 200

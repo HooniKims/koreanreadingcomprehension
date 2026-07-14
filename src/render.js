@@ -80,6 +80,7 @@ export function renderParagraph(lesson, state, handlers) {
               .map((sentence, index) => renderSentenceButton(sentence, index, selectedIndex))
               .join(" ")}
           </div>
+          ${renderNextParagraphPreview(lesson, state)}
         </section>
         <section class="response-column" aria-label="답변과 AI 도움">
           ${renderFeedback(state, response)}
@@ -219,6 +220,27 @@ function renderSocraticMessage(message) {
   `;
 }
 
+function renderNextParagraphPreview(lesson, state) {
+  const nextParagraph = lesson.paragraphs[state.currentIndex + 1];
+
+  if (!nextParagraph) {
+    return "";
+  }
+
+  return `
+    <aside class="next-paragraph-preview" aria-label="다음 문단 미리 보기">
+      <p class="preview-kicker">${escapeHtml(nextParagraph.label)} 살짝 보기 · 글의 흐름 참고용</p>
+      <p class="preview-text">${nextParagraph.sentences.map((sentence) => escapeHtml(sentence.text)).join(" ")}</p>
+    </aside>
+  `;
+}
+
+const CIRCLED_NUMBERS = ["①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩", "⑪", "⑫", "⑬", "⑭", "⑮", "⑯", "⑰", "⑱", "⑲", "⑳"];
+
+function circledNumber(index) {
+  return CIRCLED_NUMBERS[index] ?? `(${index + 1})`;
+}
+
 function renderSentenceButton(sentence, index, selectedIndex) {
   return `
     <span class="sentence-card"
@@ -227,8 +249,9 @@ function renderSentenceButton(sentence, index, selectedIndex) {
       data-index="${index}"
       data-selected="${selectedIndex === index}"
       aria-pressed="${selectedIndex === index}"
+      aria-label="${escapeHtml(`${index + 1}번 문장: ${sentence.text}`)}"
     >
-      <span class="sentence-text">${escapeHtml(sentence.text)}</span>
+      <span class="sentence-number">${circledNumber(index)}</span><span class="sentence-text">${escapeHtml(sentence.text)}</span>
     </span>
   `;
 }
@@ -779,14 +802,6 @@ function renderModeTools(state) {
         <span>수업 코드 ${escapeHtml(state.classroom.classCode || "-")}</span>
         <strong>${escapeHtml(state.classroom.nickname || "익명 학생")}</strong>
       </div>
-      <div class="view-switcher" role="tablist" aria-label="화면 전환">
-        <button class="view-button" type="button" data-view="student" aria-selected="${
-          state.ui.view === "student"
-        }">학생 활동</button>
-        <button class="view-button" type="button" data-view="teacher" aria-selected="${
-          state.ui.view === "teacher"
-        }">교사용 화면</button>
-      </div>
       <div class="reset-actions" aria-label="초기화">
         <button class="restart-button" type="button">처음부터</button>
         <button class="entry-reset-button" type="button">입장 다시하기</button>
@@ -799,9 +814,6 @@ function renderModeTools(state) {
 }
 
 function wireCommonHandlers(container, handlers) {
-  container.querySelectorAll(".view-button").forEach((button) => {
-    button.addEventListener("click", () => handlers.onView(button.dataset.view));
-  });
   container.querySelector(".restart-button")?.addEventListener("click", handlers.onRestart);
   container.querySelector(".entry-reset-button")?.addEventListener("click", handlers.onResetEntry);
 }

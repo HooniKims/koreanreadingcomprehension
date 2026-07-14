@@ -265,3 +265,39 @@ test("socratic dialogue panel stacks comfortably on mobile screens", () => {
   assert.match(mobileBlock, /\.socratic-send\s*{[^}]*width:\s*100%;/s);
   assert.match(mobileBlock, /\.socratic-messages\s*{[^}]*max-height:/s);
 });
+
+test("teacher dashboard is separated onto its own /teacher path", () => {
+  const renderSource = readFileSync(new URL("../src/render.js", import.meta.url), "utf8");
+  const appSource = readFileSync(new URL("../src/app.js", import.meta.url), "utf8");
+  const netlifyToml = readFileSync(new URL("../netlify.toml", import.meta.url), "utf8");
+  const buildScript = readFileSync(new URL("../scripts/build-static.mjs", import.meta.url), "utf8");
+
+  assert.doesNotMatch(renderSource, /view-button/);
+  assert.doesNotMatch(renderSource, /data-view="teacher"/);
+  assert.match(appSource, /isTeacherPath/);
+  assert.match(appSource, /"\/teacher"/);
+  assert.doesNotMatch(appSource, /onView\(/);
+  assert.match(netlifyToml, /from = "\/teacher"/);
+  assert.match(buildScript, /teacher\/index\.html/);
+});
+
+test("each sentence starts with a circled order number", () => {
+  const renderSource = readFileSync(new URL("../src/render.js", import.meta.url), "utf8");
+  const styles = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
+
+  assert.match(renderSource, /CIRCLED_NUMBERS = \["①", "②"/);
+  assert.match(renderSource, /<span class="sentence-number">\$\{circledNumber\(index\)\}<\/span>/);
+  assert.match(renderSource, /aria-label="\$\{escapeHtml\(`\$\{index \+ 1\}번 문장/);
+  assert.match(styles, /\.sentence-number\s*{[^}]*display:\s*inline-block;/s);
+});
+
+test("next paragraph is previewed below the current one as read-only context", () => {
+  const renderSource = readFileSync(new URL("../src/render.js", import.meta.url), "utf8");
+  const styles = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
+
+  assert.match(renderSource, /renderNextParagraphPreview/);
+  assert.match(renderSource, /class="next-paragraph-preview"/);
+  assert.match(renderSource, /살짝 보기 · 글의 흐름 참고용/);
+  assert.doesNotMatch(renderSource, /next-paragraph-preview[\s\S]{0,300}sentence-card/);
+  assert.match(styles, /\.next-paragraph-preview\s*{/);
+});
