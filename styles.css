@@ -232,6 +232,12 @@ button {
   outline: none;
 }
 
+.footer-middle a[aria-current="page"] {
+  color: var(--green-accent);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
 .legal-page {
   min-height: 100vh;
   background: var(--cream);
@@ -285,6 +291,69 @@ button {
   font-size: 17px;
   line-height: 1.8;
   word-break: keep-all;
+}
+
+.legal-effective-date {
+  color: var(--ink-soft) !important;
+  font-size: 15px !important;
+  font-weight: 700;
+}
+
+.legal-note {
+  padding: 16px 18px;
+  border-left: 4px solid var(--gold);
+  background: color-mix(in srgb, var(--green-light) 34%, var(--paper) 66%);
+  color: var(--green-house) !important;
+  font-weight: 700;
+}
+
+.legal-nowrap {
+  white-space: nowrap;
+}
+
+.legal-table-hint {
+  color: var(--ink-soft) !important;
+  font-size: 15px !important;
+  font-weight: 700;
+}
+
+.legal-table-wrap {
+  overflow-x: auto;
+  border: 1px solid rgba(30, 57, 50, 0.16);
+  border-radius: 8px;
+  background: var(--paper);
+}
+
+.legal-table-wrap:focus-visible {
+  outline: 3px solid rgba(0, 117, 74, 0.26);
+  outline-offset: 3px;
+}
+
+.legal-table-wrap table {
+  width: 100%;
+  min-width: 680px;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.legal-table-wrap th,
+.legal-table-wrap td {
+  padding: 15px 16px;
+  border-bottom: 1px solid rgba(30, 57, 50, 0.12);
+  font-size: 15px;
+  line-height: 1.65;
+  vertical-align: top;
+  word-break: keep-all;
+}
+
+.legal-table-wrap th {
+  background: var(--green-house);
+  color: #fff;
+  font-weight: 800;
+}
+
+.legal-table-wrap tr:last-child td {
+  border-bottom: 0;
 }
 
 .lesson-hero {
